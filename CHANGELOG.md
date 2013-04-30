@@ -1,6 +1,65 @@
 # Changelog
 
-## 0.6.0.dev
+## 0.6.7
+
+- internals
+  - [#188] Add IDs to the show views for integration testing [@egtann](https://github.com/egtann)
+
+## 0.6.6
+
+- enhancements
+  - [#187] Raise error if configuration is not set
+
+## 0.6.5
+
+- enhancements
+  - [#184] Vendor the Bootstrap CSS [@tylerhunt](https://github.com/tylerhunt)
+
+## 0.6.4
+
+- bug
+  - [#180] Add localization to authorized_applications destroy notice [@aalvarado](https://github.com/aalvarado)
+
+## 0.6.3
+
+- bugfixes
+  - [#163] Error response content-type header should be application/json [@ggayan](https://github.com/ggayan)
+  - [#175] Make token.expires_in_seconds return nil when expires_in is nil [@miyagawa](https://github.com/miyagawa)
+- enhancements
+  - [#166, #172, #174] Behavior to automatically authorize based on a configured proc
+- internals
+  - [#168] Using expectation syntax for controller specs [@rdsoze](https://github.com/rdsoze)
+
+## 0.6.2
+
+- bugfixes
+  - [#162] Remove ownership columns from base migration template [@rdsoze](https://github.com/rdsoze)
+
+## 0.6.1
+
+- bugfixes
+  - [#160] Removed |routes| argument from initializer authenticator blocks
+- documentation
+  - [#160] Fixed description of context of authenticator blocks
+
+## 0.6.0
+
+- enhancements
+  - Mongoid `orm` configuration accepts only :mongoid2 or :mongoid3
+  - Authorization endpoint does not redirect in #new action anymore. It wasn't specified by OAuth spec
+  - TokensController now inherits from ActionController::Metal. There might be performance upgrades
+  - Add link to authorization in Applications scaffold
+  - [#116] MongoMapper support [@carols10cents](https://github.com/carols10cents)
+  - [#122] Mongoid3 support [@petergoldstein](https://github.com/petergoldstein)
+  - [#150] Introduce test redirect uri for applications
+- bugfixes
+  - [#157] Response token status should be `:ok`, not `:success` [@theycallmeswift](https://github.com/theycallmeswift)
+  - [#159] Remove ActionView::Base.field_error_proc override (fixes #145)
+- internals
+  - Update development dependencies
+  - Several refactorings
+  - Rails/ORM are easily swichable with env vars (rails and orm)
+  - Travis now tests against Mongoid v2
 
 ## 0.5.0.rc1
 

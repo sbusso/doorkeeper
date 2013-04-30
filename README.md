@@ -1,38 +1,31 @@
 # Doorkeeper - awesome oauth provider for your Rails app.
 
-[![Build Status](https://secure.travis-ci.org/applicake/doorkeeper.png)](http://travis-ci.org/applicake/doorkeeper)
-[![Dependency Status](https://gemnasium.com/applicake/doorkeeper.png)](https://gemnasium.com/applicake/doorkeeper)
-[![Code Climate](https://codeclimate.com/badge.png)](https://codeclimate.com/github/applicake/doorkeeper)
+[![Build Status](https://travis-ci.org/applicake/doorkeeper.png?branch=master)](https://travis-ci.org/applicake/doorkeeper)
+[![Dependency Status](https://gemnasium.com/applicake/doorkeeper.png?travis)](https://gemnasium.com/applicake/doorkeeper)
+[![Code Climate](https://codeclimate.com/github/applicake/doorkeeper.png)](https://codeclimate.com/github/applicake/doorkeeper)
+[![Gem Version](https://badge.fury.io/rb/doorkeeper.png)](https://rubygems.org/gems/doorkeeper)
 
 Doorkeeper is a gem that makes it easy to introduce OAuth 2 provider functionality to your application.
 
 The gem is under constant development. It is based in the [version 22 of the OAuth specification](http://tools.ietf.org/html/draft-ietf-oauth-v2-22) and it still does not support all OAuth features.
 
-For more information about the supported features, check out the related [page in the wiki](https://github.com/applicake/doorkeeper/wiki/Supported-Features). For more information about OAuth 2 go to [OAuth 2 Specs (Draft)](http://tools.ietf.org/html/draft-ietf-oauth-v2-22).
+## Useful links
+
+- For documentation, please check out our [wiki](https://github.com/applicake/doorkeeper/wiki)
+- For general questions, please post it in our [google groups](https://groups.google.com/forum/?fromgroups#!forum/doorkeeper-gem) or [stack overflow](http://stackoverflow.com/questions/tagged/doorkeeper)
 
 ## Requirements
 
-### Ruby
-
-- 1.8.7, 1.9.2 or 1.9.3
-
-### Rails
-
-- 3.1.x or 3.2.x
-
-### ORM
-
-- ActiveRecord
-- Mongoid 2 (only for doorkeeper v0.5+)
-- Mongoid 3 (only for doorkeeper v0.6+)
-- MongoMapper (only for doorkeeper v0.6+)
+- Ruby 1.8.7, 1.9.2 or 1.9.3
+- Rails 3.1.x or 3.2.x
+- ORM ActiveRecord, Mongoid 2, Mongoid 3 or MongoMapper
 
 ## Installation
 
 Put this in your Gemfile:
 
 ``` ruby
-gem 'doorkeeper', '~> 0.5.0.rc1'
+gem 'doorkeeper', '~> 0.6.7'
 ```
 
 Run the installation generator with:
@@ -53,37 +46,23 @@ Don't forget to run the migration with:
 
     rake db:migrate
 
-### Mongoid (only doorkeeper v0.5+)
+### Mongoid / MongoMapper
 
-Doorkeeper currently supports Mongoid 2 and 3. To start using it, you have to set the `orm` configuration:
-
-``` ruby
-Doorkeeper.configure do
-  orm :mongoid
-end
-```
-
-**Note:** Make sure you create indexes for doorkeeper models. You can do this either by running `rake db:mongoid:create_indexes`
-or (if you're using Mongoid 2) by adding `autocreate_indexes: true` to your `config/mongoid.yml`
-
-To run the test suite with Mongoid you can run `DOORKEEPER_ORM=mongoid bundle exec rake`.  Note that by default this runs the suite with Mongoid 3.0.x.  To run the test suite with Mongoid 2.4.x, you will need to do the following:
-
-1. Change the version in the :mongoid group in the Gemfile from 3.0 to 2.4
-2. Replace the spec/dummy/config/mongoid.yml file with the spec/dummy/config/mongoid_2.yml file.
-
-With these changes the test suite will run with Mongoid 2.4.x
-
-### MongoMapper (only doorkeeper v0.5+)
-
-Doorkeeper currently supports MongoMapper git HEAD. To start using it, you have to set the `orm` configuration:
+Doorkeeper currently supports MongoMapper, Mongoid 2 and 3. To start using it, you have to set the `orm` configuration:
 
 ``` ruby
 Doorkeeper.configure do
-  orm :mongo_mapper
+  orm :mongoid2 # or :mongoid3, :mongo_mapper
 end
 ```
 
-Then generate the `db/indexes.rb` file and create indexes for the doorkeeper models:
+#### Mongoid indexes
+
+Make sure you create indexes for doorkeeper models. You can do this either by running `rake db:mongoid:create_indexes` or (if you're using Mongoid 2) by adding `autocreate_indexes: true` to your `config/mongoid.yml`
+
+#### MongoMapper indexes
+
+Generate the `db/indexes.rb` file and create indexes for the doorkeeper models:
 
     rails generate doorkeeper:mongo_mapper:indexes
     rake db:index
@@ -115,21 +94,25 @@ You need to configure Doorkeeper in order to provide resource_owner model and au
 
 ``` ruby
 Doorkeeper.configure do
-  resource_owner_authenticator do |routes|
-    current_user || redirect_to(routes.login_url) # returns nil if current_user is not logged in
+  resource_owner_authenticator do
+    User.find(session[:current_user_id]) || redirect_to(login_url)
   end
 end
 ```
 
-This block runs into the context of your Rails application, and it has access to `current_user` method, for example.
+This code is run in the context of your application so you have access to your models, session or routes helpers. However,
+since this code is not run in the context of your application's ApplicationController it doesn't have access
+to the methods defined over there.
 
 If you use [devise](https://github.com/plataformatec/devise), you may want to use warden to authenticate the block:
 
 ``` ruby
-resource_owner_authenticator do |routes|
+resource_owner_authenticator do
   current_user || warden.authenticate!(:scope => :user)
 end
 ```
+
+Side note: when using devise you have access to current_user as devise extends entire ActionController::Base with the current_#{mapping}.
 
 If you are not using devise, you may want to check other ways of authentication [here](https://github.com/applicake/doorkeeper/wiki/Authenticating-using-Clearance-DIY).
 
@@ -248,6 +231,29 @@ The logic is the same as the `resource_owner_authenticator` block. **Note:** sin
 
 If you want to upgrade doorkeeper to a new version, check out the [upgrading notes](https://github.com/applicake/doorkeeper/wiki/Migration-from-old-versions) and take a look at the [changelog](https://github.com/applicake/doorkeeper/blob/master/CHANGELOG.md).
 
+### Development
+
+To run the local engine server:
+
+```
+rails=3.2.8 orm=active_record bundle install
+rails=3.2.8 orm=active_record bundle exec rails server
+````
+
+By default, it uses the latest Rails version with ActiveRecord. To run the tests:
+
+```
+rails=3.2.8 orm=active_record bundle exec rake
+```
+
+Or you might prefer to run `script/run_all` to integrate against all ORMs.
+
+### Contributing
+
+Want to contribute and don't know where to start? Check out [features we're missing](https://github.com/applicake/doorkeeper/wiki/Supported-Features), create [example apps](https://github.com/applicake/doorkeeper/wiki/Example-Applications), integrate the gem with your app and let us know!
+
+Also, check out our [contributing guidelines page](https://github.com/applicake/doorkeeper/wiki/Contributing).
+
 ## Other resources
 
 ### Wiki
@@ -265,12 +271,6 @@ Check out this screencast from [railscasts.com](http://railscasts.com/): [#353 O
 ### Client applications
 
 After you set up the provider, you may want to create a client application to test the integration. Check out these [client examples](https://github.com/applicake/doorkeeper/wiki/Example-Applications) in our wiki or follow this [tutorial here](https://github.com/applicake/doorkeeper/wiki/Testing-your-provider-with-OAuth2-gem).
-
-### Contributing/Development
-
-Want to contribute and don't know where to start? Check out [features we're missing](https://github.com/applicake/doorkeeper/wiki/Supported-Features), create [example apps](https://github.com/applicake/doorkeeper/wiki/Example-Applications), integrate the gem with your app and let us know!
-
-Also, check out our [contributing guidelines page](https://github.com/applicake/doorkeeper/wiki/Contributing).
 
 ### Supported ruby versions
 
